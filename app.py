@@ -176,9 +176,13 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 
 # Display chat history
+
 for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+    try:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+    except:
+        pass
 # for message in st.session_state.messages:
 #     with st.chat_message(message.role):
 #         st.markdown(message.content)
@@ -193,15 +197,17 @@ if prompt := st.chat_input("How can I help with your order or product search?"):
         response_placeholder = st.empty()
 
         # 1. Initial LLM Call
+
         chat_completion = client.chat.completions.create(
             model=GROQ_MODEL,
             messages=[{"role": m["role"], "content": m["content"]}
-                      for m in st.session_state.messages],
+                      for m in st.session_state.messages if "role" in m and "content" in m],
             tools=TOOLS,
             tool_choice="auto"
         )
 
         msg = chat_completion.choices[0].message
+        msg_dict = msg.to_dict()
 
         # 2. Check if Tool Call is needed
         if msg.tool_calls:
@@ -214,7 +220,7 @@ if prompt := st.chat_input("How can I help with your order or product search?"):
                     st.write(tool_output)
 
                 # Add tool result to history
-                st.session_state.messages.append(msg)
+                st.session_state.messages.append(msg_dict)
                 st.session_state.messages.append({
                     "role": "tool",
                     "tool_call_id": tool_call.id,
