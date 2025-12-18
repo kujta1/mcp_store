@@ -1,0 +1,6 @@
+mcp
+chainlit
+google-generativeai
+groq
+streamlit
+groq
